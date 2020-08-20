@@ -61,5 +61,3 @@ for plist in $plists; do
     plistname=`echo "$plist" | cut -c 3-`
     printWithHeadings "$plistname" "$plistjson"
 done
-
-#
