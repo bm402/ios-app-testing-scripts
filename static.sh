@@ -85,3 +85,5 @@ done
 words=(Debug Test Dummy Old Legacy Secret Key Encrypt Encode Decrypt Decode Random)
 classDump "$1" "objc"
 classDump "$1" "swift"
+
+# Strings
