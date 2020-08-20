@@ -35,6 +35,20 @@ function plistXmlToJson {
     rm "$plistjsonfile"
 }
 
+function classDump {
+    printTitle "Interesting $2 classes"
+    dumpfile="class-dump-$2-$1-$timestamp.txt"
+    dsdump --"$2" --verbose=0 --arch arm64 --defined "$HOME/Documents/ios-apps/$1/AppFiles/$1" > "$dumpfile"
+    dsdump --"$2" --verbose=5 --arch arm64 --defined "$HOME/Documents/ios-apps/$1/AppFiles/$1" > "$curdir/$dumpfile"
+    for word in "${words[@]}"; do
+        classes=`grep -iF "$word" "$dumpfile"`
+        if [ ! -z "$classes" ]; then
+            printContentWithHeading "$word" "$classes"
+        fi
+    done
+    rm "$dumpfile"
+}
+
 # Usage
 if [ -z "$1" ]; then
     echo "[*] Usage: $0 [app name]"
@@ -68,28 +82,6 @@ for plist in $plists; do
 done
 
 # Class dumps
-words=(Debug Test Dummy Old Legacy Secret Key Encrypt Encode Decrypt Decode)
-
-printTitle "Interesting objc classes"
-dumpfileobjc="class-dump-objc-$1-$timestamp.txt"
-dsdump --objc --verbose=0 --arch arm64 --defined "$HOME/Documents/ios-apps/$1/AppFiles/$1" > "$dumpfileobjc"
-dsdump --objc --verbose=5 --arch arm64 --defined "$HOME/Documents/ios-apps/$1/AppFiles/$1" > "$curdir/$dumpfileobjc"
-for word in "${words[@]}"; do
-    classes=`grep -iF "$word" "$dumpfileobjc"`
-    if [ ! -z "$classes" ]; then
-        printContentWithHeading "$word" "$classes"
-    fi
-done
-rm "$dumpfileobjc"
-
-printTitle "Interesting swift classes"
-dumpfileswift="class-dump-swift-$1-$timestamp.txt"
-dsdump --swift --verbose=0 --arch arm64 --defined "$HOME/Documents/ios-apps/$1/AppFiles/$1" > "$dumpfileswift"
-dsdump --swift --verbose=5 --arch arm64 --defined "$HOME/Documents/ios-apps/$1/AppFiles/$1" > "$curdir/$dumpfileswift"
-for word in "${words[@]}"; do
-    classes=`grep -iF "$word" "$dumpfileswift"`
-    if [ ! -z "$classes" ]; then
-        printContentWithHeading "$word" "$classes"
-    fi
-done
-rm "$dumpfileswift"
+words=(Debug Test Dummy Old Legacy Secret Key Encrypt Encode Decrypt Decode Random)
+classDump "$1" "objc"
+classDump "$1" "swift"
