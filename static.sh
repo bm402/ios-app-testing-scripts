@@ -87,6 +87,14 @@ for conf in $confs; do
     printContentWithHeading "$confname" "$confcontent"
 done
 
+# Find Core Data files
+printTitle "Core Data files"
+moms=`find . -name "*.mom*"`
+for mom in $moms; do
+    momname=`echo "$mom" | cut -c 3-`
+    printContent "$mom"
+done
+
 # Class dumps
 words=(Debug Test Dummy Develop Fake Legacy Secret Private Key Token Encrypt Encod Decrypt Decod Random Password Authenticat User Credential)
 function classDump {
