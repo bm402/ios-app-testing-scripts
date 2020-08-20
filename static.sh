@@ -39,12 +39,16 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-# Navigate to directory
+# Global variables
 curdir=`pwd`
-cd "$HOME/Documents/ios-apps/$1/AppFiles"
+appfilesdir="$HOME/Documents/ios-apps/$1/AppFiles"
+appbinary="$appfilesdir/$1"
+timestamp=`date +"%Y%m%d%H%M%S"`
+
+# Navigate to directory
+cd "$appfilesdir"
 
 # Create output file
-timestamp=`date +"%Y%m%d%H%M%S"`
 outputfile="$curdir/static-analysis-$1-$timestamp.txt"
 touch "$outputfile"
 
@@ -65,13 +69,31 @@ for plist in $plists; do
     printContentWithHeading "$plistname" "$plistjson"
 done
 
+# Find JSON files and print
+printTitle ".json files"
+jsons=`find . -name "*.json"`
+for json in $jsons; do
+    jsoncontent=`cat $json | jq .`
+    jsonname=`echo "$json" | cut -c 3-`
+    printContentWithHeading "$jsonname" "$jsoncontent"
+done
+
+# Find config files and print
+printTitle ".conf files"
+confs=`find . -name "*.conf"`
+for conf in $confs; do
+    confcontent=`cat $conf`
+    confname=`echo "$conf" | cut -c 3-`
+    printContentWithHeading "$confname" "$confcontent"
+done
+
 # Class dumps
-words=(Debug Test Dummy Old Legacy Secret Key Encrypt Encode Decrypt Decode Random)
+words=(Debug Test Dummy Develop Fake Legacy Secret Private Key Token Encrypt Encod Decrypt Decod Random Password Authenticat User Credential)
 function classDump {
     printTitle "Interesting $2 classes"
     dumpfile="class-dump-$2-$1-$timestamp.txt"
-    dsdump --"$2" --verbose=0 --arch arm64 --defined "$HOME/Documents/ios-apps/$1/AppFiles/$1" > "$dumpfile"
-    dsdump --"$2" --verbose=5 --arch arm64 --defined "$HOME/Documents/ios-apps/$1/AppFiles/$1" > "$curdir/$dumpfile"
+    dsdump --"$2" --verbose=0 --arch arm64 --defined "$appbinary" > "$dumpfile"
+    dsdump --"$2" --verbose=5 --arch arm64 --defined "$appbinary" > "$curdir/$dumpfile"
     for word in "${words[@]}"; do
         classes=`grep -iF "$word" "$dumpfile"`
         if [ ! -z "$classes" ]; then
@@ -84,3 +106,29 @@ classDump "$1" "objc"
 classDump "$1" "swift"
 
 # Strings
+printTitle "Interesting strings in binary"
+stringsfile="strings-$1-$timestamp.txt"
+strings "$appbinary" > "$stringsfile"
+for word in "${words[@]}"; do
+    strings=`grep -iF "$word" "$stringsfile"`
+    if [ ! -z "$strings" ]; then
+        printContentWithHeading "$word" "$strings"
+    fi
+done
+
+printTitle "URLs in binary"
+urls=`grep -iF "://" "$stringsfile"`
+if [ ! -z "$urls" ]; then
+    printContent "$urls"
+fi
+
+printTitle "Possible IDs in binary"
+an64s=`grep -E '^[[:alnum:]]{64,64}$' "$stringsfile"`
+if [ ! -z "$an64s" ]; then
+    printContentWithHeading "Alphanumeric strings with 64 characters" "$an64s"
+fi
+uuids=`grep -E '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$' "$stringsfile"`
+if [ ! -z "$uuids" ]; then
+    printContentWithHeading "UUIDs" "$uuids"
+fi
+rm "$stringsfile"
