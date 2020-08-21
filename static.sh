@@ -167,3 +167,6 @@ infoPlistSection "NSAppTransportSecurity"
 infoPlistSection "UTImportedTypeDeclarations"
 infoPlistSection "UTExportedTypeDeclarations"
 infoPlistSection "CFBundleDocumentTypes"
+
+# File message
+printTitle "Static analysis finished, output file saved to $outputfile"
