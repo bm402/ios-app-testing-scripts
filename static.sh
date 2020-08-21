@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Utility Functions
+# Utility functions
 function printTitle {
     echo >> "$outputfile"
     echo "[*] $1" >> "$outputfile"
@@ -24,6 +24,11 @@ function printContent {
     echo >> "$outputfile"
     echo "$1"
     echo
+}
+
+function printContentInList {
+    echo "$1" >> "$outputfile"
+    echo "$1"
 }
 
 function plistXmlToJson {
@@ -92,8 +97,17 @@ printTitle "Core Data files"
 moms=`find . -name "*.mom*"`
 for mom in $moms; do
     momname=`echo "$mom" | cut -c 3-`
-    printContent "$mom"
+    printContent "$momname"
 done
+
+# List other interesting files
+printTitle "Other potentially interesting files"
+files=`find . | sed "s/ /_/g" | grep -v -E ".plist|.json|.conf|.mom|.storyboardc|/Frameworks/|.xib|.nib|.png|.jpg|.svg"`
+for file in $files; do
+    filename=`echo "$file" | cut -c 3-`
+    printContentInList "$filename"
+done
+echo
 
 # Class dumps
 words=(Debug Test Dummy Develop Fake Legacy Secret Private Key Token Encrypt Encod Decrypt Decod Random Password Authenticat User Credential)
@@ -140,3 +154,16 @@ if [ ! -z "$uuids" ]; then
     printContentWithHeading "UUIDs" "$uuids"
 fi
 rm "$stringsfile"
+
+# Info.plist summary
+printTitle "Info.plist summary"
+function infoPlistSection {
+    section=`echo "$infoplistjson" | jq ".$1?"`
+    printContentWithHeading "$1" "$section"
+}
+infoPlistSection "CFBundleURLTypes"
+infoPlistSection "LSApplicationQueriesSchemes"
+infoPlistSection "NSAppTransportSecurity"
+infoPlistSection "UTImportedTypeDeclarations"
+infoPlistSection "UTExportedTypeDeclarations"
+infoPlistSection "CFBundleDocumentTypes"
