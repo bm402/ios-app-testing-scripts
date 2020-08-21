@@ -38,6 +38,13 @@ function plistXmlToJson {
     rm "$plistjsonfile"
 }
 
+function findIndicators {
+    indicators=`rabin2 -z -zz "$1" | egrep -i "$2"`
+    if [ ! -z "$indicators" ]; then
+        printContentWithHeading "$2" "$indicators"
+    fi
+}
+
 # Usage
 if [ -z "$1" ]; then
     echo "[*] Usage: $0 [app name]"
@@ -110,7 +117,7 @@ done
 echo
 
 # Class dumps
-words=(Debug Test Dummy Develop Fake Legacy Secret Private Key Token Encrypt Encod Decrypt Decod Random Password Authenticat User Credential)
+words=(Debug Test Dummy Develop Fake Legacy Internal Secret Private Key Token Encrypt Encod Decrypt Decod Random Password Authenticat User Credential)
 function classDump {
     printTitle "Interesting $2 classes"
     dumpfile="class-dump-$2-$1-$timestamp.txt"
@@ -154,6 +161,30 @@ if [ ! -z "$uuids" ]; then
     printContentWithHeading "UUIDs" "$uuids"
 fi
 rm "$stringsfile"
+
+# WebView indicators
+printTitle "UIWebViews"
+findIndicators "$1" "UIWebView"
+findIndicators "$1" "baseURL"
+findIndicators "$1" "allowingReadAccessToURL"
+findIndicators "$1" "JSContext"
+findIndicators "$1" "JSExport"
+
+printTitle "SFSafariViewController"
+findIndicators "$1" "SFSafariViewController"
+
+printTitle "WKWebViews"
+findIndicators "$1" "WKWebView"
+findIndicators "$1" "javascriptEnabled"
+findIndicators "$1" "hasOnlySecureContent"
+findIndicators "$1" "allowFileAccessFromFileURLs"
+findIndicators "$1" "allowUniversalAccessFromFileURLs"
+findIndicators "$1" "WKScriptMessageHandler"
+
+# Object encoding indicators
+printTitle "Object encoding"
+findIndicators "$1" "NSCoding"
+findIndicators "$1" "NSSecureCoding"
 
 # Info.plist summary
 printTitle "Info.plist summary"
