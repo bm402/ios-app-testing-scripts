@@ -104,12 +104,13 @@ printTitle "Core Data files"
 moms=`find . -name "*.mom*"`
 for mom in $moms; do
     momname=`echo "$mom" | cut -c 3-`
-    printContent "$momname"
+    printContentInList "$momname"
 done
+echo
 
 # List other interesting files
 printTitle "Other potentially interesting files"
-files=`find . | sed "s/ /_/g" | grep -v -E ".plist|.json|.conf|.mom|.storyboardc|/Frameworks/|.xib|.nib|.png|.jpg|.svg"`
+files=`find . | sed "s/ /_/g" | grep -v -E ".plist|.json|.conf|.mom|.storyboardc|/Frameworks|.xib|.nib|.png|.jpg|.svg|.ttf|.otf|.car|.lproj"`
 for file in $files; do
     filename=`echo "$file" | cut -c 3-`
     printContentInList "$filename"
@@ -135,15 +136,15 @@ classDump "$1" "objc"
 classDump "$1" "swift"
 
 # Strings
-printTitle "Interesting strings in binary"
+# printTitle "Interesting strings in binary"
 stringsfile="strings-$1-$timestamp.txt"
 strings "$appbinary" > "$stringsfile"
-for word in "${words[@]}"; do
-    strings=`grep -iF "$word" "$stringsfile"`
-    if [ ! -z "$strings" ]; then
-        printContentWithHeading "$word" "$strings"
-    fi
-done
+# for word in "${words[@]}"; do
+#     strings=`grep -iF "$word" "$stringsfile"`
+#     if [ ! -z "$strings" ]; then
+#         printContentWithHeading "$word" "$strings"
+#     fi
+# done
 
 printTitle "URLs in binary"
 urls=`grep -iF "://" "$stringsfile"`
@@ -156,7 +157,7 @@ an64s=`grep -E '^[[:alnum:]]{64,64}$' "$stringsfile"`
 if [ ! -z "$an64s" ]; then
     printContentWithHeading "Alphanumeric strings with 64 characters" "$an64s"
 fi
-uuids=`grep -E '^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$' "$stringsfile"`
+uuids=`grep -E '[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}' "$stringsfile"`
 if [ ! -z "$uuids" ]; then
     printContentWithHeading "UUIDs" "$uuids"
 fi
@@ -200,4 +201,5 @@ infoPlistSection "UTExportedTypeDeclarations"
 infoPlistSection "CFBundleDocumentTypes"
 
 # File message
-printTitle "Static analysis finished, output file saved to $outputfile"
+echo "[*] Static analysis finished, output file saved to $outputfile"
+echo
