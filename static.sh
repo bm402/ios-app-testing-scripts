@@ -137,8 +137,8 @@ classDump "$1" "swift"
 
 # Strings
 # printTitle "Interesting strings in binary"
-# stringsfile="strings-$1-$timestamp.txt"
-# strings "$appbinary" > "$stringsfile"
+stringsfile="strings-$1-$timestamp.txt"
+strings "$appbinary" > "$stringsfile"
 # for word in "${words[@]}"; do
 #     strings=`grep -iF "$word" "$stringsfile"`
 #     if [ ! -z "$strings" ]; then
