@@ -153,7 +153,7 @@ if [ ! -z "$urls" ]; then
 fi
 
 printTitle "Possible IDs in binary"
-an64s=`grep -E '[[:alnum:]]{64,64}' "$stringsfile"`
+an64s=`grep -E '^[[:alnum:]]{64,64}$' "$stringsfile"`
 if [ ! -z "$an64s" ]; then
     printContentWithHeading "Alphanumeric strings with 64 characters" "$an64s"
 fi
